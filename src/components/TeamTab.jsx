@@ -28,6 +28,14 @@ export default function TeamTab() {
     await api.deactivateUser(id);
     load();
   }
+  async function handleActivate(id) {
+    await api.activateUser(id);
+    load();
+  }
+  async function handleRoleChange(id, role) {
+    await api.updateUserRole(id, role);
+    load();
+  }
 
   if (error) return <EmptyState text={`Couldn't load team: ${error}`} />;
   if (loading) return <p style={{ fontSize: 13, color: "var(--ink-soft)" }}>Loading...</p>;
@@ -58,11 +66,21 @@ export default function TeamTab() {
                   <p style={{ fontSize: 12, color: "var(--ink-soft)", margin: "2px 0 0" }}>{u.email}</p>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <select
+                    className="select"
+                    style={{ width: 190 }}
+                    value={u.role}
+                    onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                  >
+                    {ROLES.map((r) => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
+                  </select>
                   <span className="badge" style={{ background: u.active ? "#DCEBE6" : "#F1DFD2", color: u.active ? "#1F5A4E" : "#9A3E1C" }}>
                     {u.active ? "Active" : "Deactivated"}
                   </span>
-                  {u.active && (
+                  {u.active ? (
                     <button className="btn btn-ghost" onClick={() => handleDeactivate(u.id)}>Deactivate</button>
+                  ) : (
+                    <button className="btn btn-ghost" onClick={() => handleActivate(u.id)}>Activate</button>
                   )}
                 </div>
               </div>

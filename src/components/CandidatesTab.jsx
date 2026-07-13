@@ -34,9 +34,16 @@ export default function CandidatesTab({ openId, setOpenId, q, setQ }) {
     return () => clearTimeout(t);
   }, [q, domainFilter, locationFilter]);
 
-  if (openId) {
-    return <CandidateDetail id={openId} onBack={() => { setOpenId(null); load(); }} />;
-  }
+  // Keep a candidate selected in the right-hand panel at all times — default
+  // to the first result whenever the current selection isn't in the list
+  // (first load, or the filters changed and the old selection scrolled out).
+  useEffect(() => {
+    if (loading) return;
+    if (candidates.length === 0) return;
+    if (!candidates.some((c) => c.id === openId)) {
+      setOpenId(candidates[0].id);
+    }
+  }, [loading, candidates]);
 
   return (
     <div>
@@ -61,27 +68,52 @@ export default function CandidatesTab({ openId, setOpenId, q, setQ }) {
       {loading && !error && <p style={{ fontSize: 13, color: "var(--ink-soft)" }}>Loading...</p>}
       {!loading && !error && candidates.length === 0 && <EmptyState text="No candidates match." />}
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: 12 }}>
-        {candidates.map((c) => (
-          <div key={c.id} className="card" style={{ padding: 15, cursor: "pointer" }} onClick={() => setOpenId(c.id)}>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <h3 className="serif" style={{ fontSize: 15, fontWeight: 600, margin: 0 }}>{c.name}</h3>
-              <DomainBadge domain={c.domain} />
-            </div>
-            <p style={{ fontSize: 12.5, color: "var(--ink-soft)", margin: "0 0 8px" }}>{c.currentTitle || "No title on file"}</p>
-            {c.resumeUrl && (
-              <p style={{ fontSize: 11, color: "var(--ink-soft)", margin: "0 0 6px" }}>📄 {resumeFileName(c.resumeUrl)}</p>
-            )}
-            {c.skills && (
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                {c.skills.split(",").filter(Boolean).slice(0, 4).map((s, i) => (
-                  <span key={i} className="mono" style={{ fontSize: 10, background: "#F6F7F3", padding: "2px 6px", borderRadius: 4 }}>{s.trim()}</span>
-                ))}
-              </div>
-            )}
+      {!loading && !error && candidates.length > 0 && (
+        <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+          <div
+            style={{
+              width: 300,
+              flexShrink: 0,
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+              maxHeight: "calc(100vh - 220px)",
+              overflowY: "auto",
+              paddingRight: 4,
+            }}
+          >
+            {candidates.map((c) => {
+              const selected = c.id === openId;
+              return (
+                <div
+                  key={c.id}
+                  className="card"
+                  style={{
+                    padding: 12,
+                    cursor: "pointer",
+                    borderColor: selected ? "var(--brand)" : undefined,
+                    background: selected ? "var(--brand-tint)" : undefined,
+                  }}
+                  onClick={() => setOpenId(c.id)}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <h3 className="serif" style={{ fontSize: 14, fontWeight: 600, margin: 0 }}>{c.name}</h3>
+                    <DomainBadge domain={c.domain} />
+                  </div>
+                  <p style={{ fontSize: 12, color: "var(--ink-soft)", margin: "0 0 4px" }}>{c.currentTitle || "No title on file"}</p>
+                  {c.resumeUrl && (
+                    <p style={{ fontSize: 10.5, color: "var(--ink-soft)", margin: 0 }}>📄 {resumeFileName(c.resumeUrl)}</p>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        ))}
-      </div>
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {openId && <CandidateDetail key={openId} id={openId} onChanged={load} />}
+          </div>
+        </div>
+      )}
 
       {showForm && (
         <div className="overlay" onClick={(e) => e.target === e.currentTarget && setShowForm(false)}>
@@ -388,7 +420,7 @@ function BulkUploadRow({ row, onUpdate, onRemove }) {
   );
 }
 
-function CandidateDetail({ id, onBack }) {
+function CandidateDetail({ id, onChanged }) {
   const [candidate, setCandidate] = useState(null);
   const [error, setError] = useState("");
   const [editing, setEditing] = useState(false);
@@ -419,14 +451,17 @@ function CandidateDetail({ id, onBack }) {
     return (
       <div>
         <button className="btn btn-ghost" style={{ marginBottom: 14 }} onClick={() => setEditing(false)}>← Back to candidate</button>
-        <CandidateForm initial={candidate} onCancel={() => setEditing(false)} onSaved={() => { setEditing(false); load(); }} />
+        <CandidateForm
+          initial={candidate}
+          onCancel={() => setEditing(false)}
+          onSaved={() => { setEditing(false); load(); onChanged && onChanged(); }}
+        />
       </div>
     );
   }
 
   return (
     <div>
-      <button className="btn btn-ghost" style={{ marginBottom: 14 }} onClick={onBack}>← All candidates</button>
       <div className="card" style={{ padding: 20, marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>

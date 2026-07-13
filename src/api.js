@@ -74,6 +74,8 @@ export const api = {
   listUsers: () => request("/auth/users"),
   createUser: (data) => request("/auth/users", { method: "POST", body: JSON.stringify(data) }),
   deactivateUser: (id) => request(`/auth/users/${id}/deactivate`, { method: "PATCH" }),
+  activateUser: (id) => request(`/auth/users/${id}/activate`, { method: "PATCH" }),
+  updateUserRole: (id, role) => request(`/auth/users/${id}/role`, { method: "PATCH", body: JSON.stringify({ role }) }),
 
   // Clients
   getClients: () => request("/clients"),
