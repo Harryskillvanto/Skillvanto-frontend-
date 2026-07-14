@@ -470,11 +470,9 @@ function CandidateDetail({ id, onChanged }) {
           <div>
             <h2 className="serif" style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{candidate.name}</h2>
             <p style={{ fontSize: 13, color: "var(--ink-soft)", margin: "4px 0 0" }}>{candidate.currentTitle || "No title on file"}</p>
-            <p className="mono" style={{ fontSize: 11, color: "var(--ink-soft)", margin: "6px 0 0" }}>
-              Added by <strong>{candidate.createdBy?.name || "unknown (added before tracking was enabled)"}</strong> · {new Date(candidate.createdAt).toLocaleDateString()}
-            </p>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {candidate.assignments?.[0] && <StageBadge stage={candidate.assignments[0].stage} />}
             <DomainBadge domain={candidate.domain} />
             <button className="btn btn-ghost" onClick={() => setEditing(true)}>Edit</button>
           </div>
@@ -483,7 +481,18 @@ function CandidateDetail({ id, onChanged }) {
         <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 14, fontSize: 13 }}>
           {candidate.email && <div>✉️ {candidate.email}</div>}
           {candidate.phone && <div>📞 {candidate.phone}</div>}
-          {candidate.address && <div>📍 {candidate.address}</div>}
+          {candidate.address && (
+            <div>
+              📍 {candidate.address} · {new Date(candidate.createdAt).toLocaleDateString()} · added by{" "}
+              <strong>{candidate.createdBy?.name || "unknown"}</strong>
+            </div>
+          )}
+          {!candidate.address && (
+            <p className="mono" style={{ fontSize: 11, color: "var(--ink-soft)", margin: 0 }}>
+              Added {new Date(candidate.createdAt).toLocaleDateString()} by{" "}
+              <strong>{candidate.createdBy?.name || "unknown"}</strong>
+            </p>
+          )}
         </div>
 
         {candidate.skills && (
