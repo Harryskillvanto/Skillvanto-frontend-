@@ -292,6 +292,7 @@ function JobDetail({ jobId, user, onBack }) {
 
         <p style={{ fontSize: 13, marginTop: 10 }}>
           {job.location || "Location TBD"} · {(job.salaryMin || job.salaryMax) ? `$${job.salaryMin || "?"}–$${job.salaryMax || "?"}` : "Salary TBD"}
+          {" · "}{new Date(job.createdAt).toLocaleDateString()} · added by <strong>{job.createdBy?.name || "unknown"}</strong>
         </p>
 
         {job.description && <p style={{ fontSize: 13, marginTop: 10, whiteSpace: "pre-wrap" }}>{job.description}</p>}
@@ -326,10 +327,6 @@ function JobDetail({ jobId, user, onBack }) {
             <StatusPill status={job.status} />
           )}
         </div>
-
-        <p className="mono" style={{ fontSize: 10.5, color: "var(--ink-soft)", marginTop: 14 }}>
-          Created by {job.createdBy?.name || "someone"} · {new Date(job.createdAt).toLocaleString()}
-        </p>
       </div>
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
