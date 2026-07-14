@@ -10,6 +10,8 @@ export default function JobsTab({ user, clients, openJobId, setOpenJobId, q, set
   const [domainFilter, setDomainFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [locationFilter, setLocationFilter] = useState("");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [sortOrder, setSortOrder] = useState("desc"); // "desc" = newest first, "asc" = oldest first
   const [showForm, setShowForm] = useState(false);
 
@@ -35,6 +37,8 @@ export default function JobsTab({ user, clients, openJobId, setOpenJobId, q, set
       if (domainFilter !== "All" && j.domain !== domainFilter) return false;
       if (statusFilter !== "All" && j.status !== statusFilter) return false;
       if (loc && !(j.location || "").toLowerCase().includes(loc)) return false;
+      if (dateFrom && new Date(j.createdAt) < new Date(dateFrom)) return false;
+      if (dateTo && new Date(j.createdAt) > new Date(`${dateTo}T23:59:59`)) return false;
       return true;
     });
     result.sort((a, b) => {
@@ -42,7 +46,7 @@ export default function JobsTab({ user, clients, openJobId, setOpenJobId, q, set
       return sortOrder === "asc" ? diff : -diff;
     });
     return result;
-  }, [jobs, q, domainFilter, statusFilter, locationFilter, sortOrder]);
+  }, [jobs, q, domainFilter, statusFilter, locationFilter, dateFrom, dateTo, sortOrder]);
 
   if (openJobId) {
     return <JobDetail jobId={openJobId} user={user} onBack={() => { setOpenJobId(null); load(); }} />;
@@ -74,6 +78,15 @@ export default function JobsTab({ user, clients, openJobId, setOpenJobId, q, set
           <option value="desc">Newest first</option>
           <option value="asc">Oldest first</option>
         </select>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <label className="label" style={{ marginBottom: 0, fontSize: 11 }}>From</label>
+          <input type="date" className="input" style={{ width: 145 }} value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          <label className="label" style={{ marginBottom: 0, fontSize: 11 }}>To</label>
+          <input type="date" className="input" style={{ width: 145 }} value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+          {(dateFrom || dateTo) && (
+            <button className="btn btn-ghost" style={{ padding: "3px 8px" }} onClick={() => { setDateFrom(""); setDateTo(""); }}>Clear</button>
+          )}
+        </div>
         {canManage && <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ New job order</button>}
       </div>
 

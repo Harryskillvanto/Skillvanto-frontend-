@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { api } from "../api.js";
 import { DOMAINS, DOMAIN_LABELS } from "../stages.js";
 import { readResumeFile, resumeFileName, resumeMimeType, extractFieldsFromText } from "../resumeFile.js";
-import { DomainBadge, SearchBox, EmptyState, FormHeader, FormFooter, Field, NotesSection } from "./ui.jsx";
+import { DomainBadge, StageBadge, SearchBox, EmptyState, FormHeader, FormFooter, Field, NotesSection } from "./ui.jsx";
 
 export default function CandidatesTab({ openId, setOpenId, q, setQ }) {
   const [candidates, setCandidates] = useState([]);
@@ -102,8 +102,11 @@ export default function CandidatesTab({ openId, setOpenId, q, setQ }) {
                   </div>
                   <p style={{ fontSize: 12, color: "var(--ink-soft)", margin: "0 0 4px" }}>{c.currentTitle || "No title on file"}</p>
                   {c.resumeUrl && (
-                    <p style={{ fontSize: 10.5, color: "var(--ink-soft)", margin: 0 }}>📄 {resumeFileName(c.resumeUrl)}</p>
+                    <p style={{ fontSize: 10.5, color: "var(--ink-soft)", margin: "0 0 2px" }}>📄 {resumeFileName(c.resumeUrl)}</p>
                   )}
+                  <p className="mono" style={{ fontSize: 10, color: "var(--ink-soft)", margin: 0 }}>
+                    Added by {c.createdBy?.name || "unknown"}
+                  </p>
                 </div>
               );
             })}
@@ -467,6 +470,9 @@ function CandidateDetail({ id, onChanged }) {
           <div>
             <h2 className="serif" style={{ fontSize: 20, fontWeight: 700, margin: 0 }}>{candidate.name}</h2>
             <p style={{ fontSize: 13, color: "var(--ink-soft)", margin: "4px 0 0" }}>{candidate.currentTitle || "No title on file"}</p>
+            <p className="mono" style={{ fontSize: 11, color: "var(--ink-soft)", margin: "6px 0 0" }}>
+              Added by <strong>{candidate.createdBy?.name || "unknown (added before tracking was enabled)"}</strong> · {new Date(candidate.createdAt).toLocaleDateString()}
+            </p>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             <DomainBadge domain={candidate.domain} />
@@ -513,18 +519,23 @@ function CandidateDetail({ id, onChanged }) {
           <p style={{ fontSize: 12.5, color: "var(--ink-soft)", marginTop: 14 }}>No resume on file — click Edit to upload one.</p>
         )}
 
-        <p className="mono" style={{ fontSize: 10.5, color: "var(--ink-soft)", marginTop: 14 }}>
-          Added by {candidate.createdBy?.name || "someone"} · {new Date(candidate.createdAt).toLocaleString()}
-        </p>
       </div>
 
       <h3 className="serif" style={{ fontSize: 15.5, fontWeight: 600, margin: "0 0 10px" }}>Pipeline activity</h3>
       {(candidate.assignments || []).length === 0 && <p style={{ fontSize: 12.5, color: "var(--ink-soft)", marginBottom: 16 }}>Not currently submitted to any job order.</p>}
       <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 24 }}>
         {(candidate.assignments || []).map((a) => (
-          <div key={a.id} className="card" style={{ padding: 12, display: "flex", justifyContent: "space-between" }}>
-            <p style={{ fontSize: 13, margin: 0 }}>{a.job?.title}</p>
-            <span className="mono" style={{ fontSize: 11, color: "var(--ink-soft)" }}>{a.stage}</span>
+          <div key={a.id} className="card" style={{ padding: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <p style={{ fontSize: 13, margin: 0, fontWeight: 500 }}>{a.job?.title}</p>
+                {a.job?.domain && <DomainBadge domain={a.job.domain} />}
+              </div>
+              <StageBadge stage={a.stage} />
+            </div>
+            <p className="mono" style={{ fontSize: 10.5, color: "var(--ink-soft)", margin: "6px 0 0" }}>
+              Last updated {new Date(a.updatedAt).toLocaleString()}{a.lastUpdatedBy?.name ? ` by ${a.lastUpdatedBy.name}` : ""}
+            </p>
           </div>
         ))}
       </div>
