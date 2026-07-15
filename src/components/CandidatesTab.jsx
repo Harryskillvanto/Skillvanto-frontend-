@@ -64,6 +64,15 @@ export default function CandidatesTab({ openId, setOpenId, q, setQ }) {
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Add candidate</button>
       </div>
 
+      <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+        <div className="card" style={{ padding: "10px 18px", display: "flex", alignItems: "baseline", gap: 8 }}>
+          <span style={{ fontSize: 18, fontWeight: 700 }}>{candidates.length}</span>
+          <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>
+            {q || domainFilter !== "All" || locationFilter.trim() ? "Matching candidates" : "Total candidates"}
+          </span>
+        </div>
+      </div>
+
       {error && <EmptyState text={`Couldn't load candidates: ${error}`} />}
       {loading && !error && <p style={{ fontSize: 13, color: "var(--ink-soft)" }}>Loading...</p>}
       {!loading && !error && candidates.length === 0 && <EmptyState text="No candidates match." />}

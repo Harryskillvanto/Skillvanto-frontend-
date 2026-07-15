@@ -51,6 +51,13 @@ export default function JobsTab({ user, clients, openJobId, setOpenJobId, q, set
   if (error) return <EmptyState text={`Couldn't load job orders: ${error}`} />;
   if (loading) return <p style={{ fontSize: 13, color: "var(--ink-soft)" }}>Loading...</p>;
 
+  const counts = {
+    total: jobs.length,
+    OPEN: jobs.filter((j) => j.status === "OPEN").length,
+    ON_HOLD: jobs.filter((j) => j.status === "ON_HOLD").length,
+    CLOSED: jobs.filter((j) => j.status === "CLOSED" || j.status === "CLOSED_WON").length,
+  };
+
   return (
     <div>
       <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
@@ -75,6 +82,13 @@ export default function JobsTab({ user, clients, openJobId, setOpenJobId, q, set
           <option value="asc">Oldest first</option>
         </select>
         {canManage && <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ New job order</button>}
+      </div>
+
+      <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+        <JobStat label="Total jobs" value={counts.total} />
+        <JobStat label="Open" value={counts.OPEN} />
+        <JobStat label="On hold" value={counts.ON_HOLD} />
+        <JobStat label="Closed" value={counts.CLOSED} />
       </div>
 
       {filtered.length === 0 && <EmptyState text="No job orders match." />}
@@ -104,6 +118,15 @@ export default function JobsTab({ user, clients, openJobId, setOpenJobId, q, set
           <JobForm clients={clients} onCancel={() => setShowForm(false)} onCreated={() => { setShowForm(false); load(); }} />
         </div>
       )}
+    </div>
+  );
+}
+
+function JobStat({ label, value }) {
+  return (
+    <div className="card" style={{ padding: "10px 18px", display: "flex", alignItems: "baseline", gap: 8 }}>
+      <span style={{ fontSize: 18, fontWeight: 700 }}>{value}</span>
+      <span style={{ fontSize: 12, color: "var(--ink-soft)" }}>{label}</span>
     </div>
   );
 }

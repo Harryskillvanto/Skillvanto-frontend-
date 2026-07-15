@@ -9,7 +9,6 @@ import TeamTab from "./components/TeamTab.jsx";
 import NotificationBell from "./components/NotificationBell.jsx";
 import ProfileMenu from "./components/ProfileMenu.jsx";
 import Logo from "./components/Logo.jsx";
-import GlobalSearch from "./components/GlobalSearch.jsx";
 
 export default function App() {
   const [user, setUser] = useState(getCurrentUser());
@@ -72,7 +71,6 @@ export default function App() {
       </div>
 
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "24px 24px 60px" }}>
-        <GlobalSearch query={searchQuery} setQuery={setSearchQuery} />
         {tab === "jobs" && <JobsTab user={user} clients={clients} openJobId={openJobId} setOpenJobId={setOpenJobId} q={searchQuery} setQ={setSearchQuery} />}
         {tab === "candidates" && <CandidatesTab openId={openCandidateId} setOpenId={setOpenCandidateId} q={searchQuery} setQ={setSearchQuery} />}
         {tab === "clients" && (
